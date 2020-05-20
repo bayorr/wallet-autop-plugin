@@ -55,18 +55,15 @@ from org.sleuthkit.autopsy.casemodule.services import Blackboard
 
 # Factory that defines the name and details of the module and allows Autopsy
 # to create instances of the modules that will do the analysis.
-# TODO: Rename this to something more specific. Search and replace for it because it is used a few times
-class SampleJythonDataSourceIngestModuleFactory(IngestModuleFactoryAdapter):
+class CryptoWalletDataSourceIngestModuleFactory(IngestModuleFactoryAdapter):
 
-    # TODO: give it a unique name.  Will be shown in module list, logs, etc.
-    moduleName = "Sample Data Source Module"
+    moduleName = "BTC Wallet Recovery"
 
     def getModuleDisplayName(self):
         return self.moduleName
 
-    # TODO: Give it a description
     def getModuleDescription(self):
-        return "Sample module that does X, Y, and Z."
+        return "Searches for and Recovers BTC wallet files"
 
     def getModuleVersionNumber(self):
         return "1.0"
@@ -80,10 +77,9 @@ class SampleJythonDataSourceIngestModuleFactory(IngestModuleFactoryAdapter):
 
 
 # Data Source-level ingest module.  One gets created per data source.
-# TODO: Rename this to something more specific. Could just remove "Factory" from above name.
-class SampleJythonDataSourceIngestModule(DataSourceIngestModule):
+class CryptoWalletDataSourceIngestModule(DataSourceIngestModule):
 
-    _logger = Logger.getLogger(SampleJythonDataSourceIngestModuleFactory.moduleName)
+    _logger = Logger.getLogger(CryptoWalletDataSourceIngestModuleFactory.moduleName)
 
     def log(self, level, msg):
         self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)
@@ -96,7 +92,7 @@ class SampleJythonDataSourceIngestModule(DataSourceIngestModule):
     # See: http://sleuthkit.org/autopsy/docs/api-docs/latest/classorg_1_1sleuthkit_1_1autopsy_1_1ingest_1_1_ingest_job_context.html
     # TODO: Add any setup code that you need here.
     def startUp(self, context):
-        
+
         # Throw an IngestModule.IngestModuleException exception if there was a problem setting up
         # raise IngestModuleException("Oh No!")
         self.context = context
@@ -120,7 +116,7 @@ class SampleJythonDataSourceIngestModule(DataSourceIngestModule):
         # in the name and then count and read them
         # FileManager API: http://sleuthkit.org/autopsy/docs/api-docs/latest/classorg_1_1sleuthkit_1_1autopsy_1_1casemodule_1_1services_1_1_file_manager.html
         fileManager = Case.getCurrentCase().getServices().getFileManager()
-        files = fileManager.findFiles(dataSource, "%test%")
+        files = fileManager.findFiles(dataSource, "%wallet%")
 
         numFiles = len(files)
         self.log(Level.INFO, "found " + str(numFiles) + " files")
@@ -138,7 +134,7 @@ class SampleJythonDataSourceIngestModule(DataSourceIngestModule):
             # Make an artifact on the blackboard.  TSK_INTERESTING_FILE_HIT is a generic type of
             # artfiact.  Refer to the developer docs for other examples.
             art = file.newArtifact(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_FILE_HIT)
-            att = BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME, SampleJythonDataSourceIngestModuleFactory.moduleName, "Test file")
+            att = BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME, CryptoWalletDataSourceIngestModuleFactory.moduleName, "Wallet File")
             art.addAttribute(att)
 
             try:
@@ -163,7 +159,7 @@ class SampleJythonDataSourceIngestModule(DataSourceIngestModule):
 
         #Post a message to the ingest messages in box.
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "Sample Jython Data Source Ingest Module", "Found %d files" % fileCount)
+            "Wallet Finder Module", "Found %d files" % fileCount)
         IngestServices.getInstance().postMessage(message)
 
         return IngestModule.ProcessResult.OK
