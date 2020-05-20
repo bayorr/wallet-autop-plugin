@@ -72,8 +72,7 @@ class CryptoWalletDataSourceIngestModuleFactory(IngestModuleFactoryAdapter):
         return True
 
     def createDataSourceIngestModule(self, ingestOptions):
-        # TODO: Change the class name to the name you'll make below
-        return SampleJythonDataSourceIngestModule()
+        return CryptoWalletDataSourceIngestModule()
 
 
 # Data Source-level ingest module.  One gets created per data source.
@@ -116,15 +115,15 @@ class CryptoWalletDataSourceIngestModule(DataSourceIngestModule):
         # in the name and then count and read them
         # FileManager API: http://sleuthkit.org/autopsy/docs/api-docs/latest/classorg_1_1sleuthkit_1_1autopsy_1_1casemodule_1_1services_1_1_file_manager.html
         fileManager = Case.getCurrentCase().getServices().getFileManager()
+
         files = fileManager.findFiles(dataSource, "%wallet%")
 
         numFiles = len(files)
         self.log(Level.INFO, "found " + str(numFiles) + " files")
         progressBar.switchToDeterminate(numFiles)
         fileCount = 0
-        for file in files:
 
-            # Check if the user pressed cancel while we were busy
+        for file in files:
             if self.context.isJobCancelled():
                 return IngestModule.ProcessResult.OK
 
@@ -133,8 +132,9 @@ class CryptoWalletDataSourceIngestModule(DataSourceIngestModule):
 
             # Make an artifact on the blackboard.  TSK_INTERESTING_FILE_HIT is a generic type of
             # artfiact.  Refer to the developer docs for other examples.
+            # TODO Make a more interesting artfiact
             art = file.newArtifact(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_FILE_HIT)
-            att = BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME, CryptoWalletDataSourceIngestModuleFactory.moduleName, "Wallet File")
+            att = BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME, CryptoWalletDataSourceIngestModuleFactory.moduleName, "Possible Wallet File")
             art.addAttribute(att)
 
             try:
@@ -144,6 +144,7 @@ class CryptoWalletDataSourceIngestModule(DataSourceIngestModule):
                 self.log(Level.SEVERE, "Error indexing artifact " + art.getDisplayName())
 
             # To further the example, this code will read the contents of the file and count the number of bytes
+            """
             inputStream = ReadContentInputStream(file)
             buffer = jarray.zeros(1024, "b")
             totLen = 0
@@ -152,7 +153,7 @@ class CryptoWalletDataSourceIngestModule(DataSourceIngestModule):
                 totLen = totLen + readLen
                 readLen = inputStream.read(buffer)
 
-
+            """
             # Update the progress bar
             progressBar.progress(fileCount)
 
