@@ -76,7 +76,7 @@ class CryptoWalletFilesIngestModule(FileIngestModule):
         # Use blackboard class to index blackboard artifacts for keyword search
         blackboard = Case.getCurrentCase().getServices().getBlackboard()
 
-        # Skip non-files. In production you'll probable see that this can be added to in order to skip obvious false positives (ie small files)
+        # Skip non-files. In production you'll probable see that this can be added to in order to skip obvious false positives (ie small files). Kept this up here because it (for some reason) makes everything go faster
         if ((file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS) or
             (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNUSED_BLOCKS) or
             (file.isFile() == False)):
@@ -84,18 +84,19 @@ class CryptoWalletFilesIngestModule(FileIngestModule):
 
         # Make the file name passed by Autopsy lowercase and check if it matches a 'known' naming convention:
         # List 'knowns' can be updated to add more search criteria.
-        knowns = ["segwit", "mainnet", "wallet", "spv", "bech"]
+        knowns = ["segwit", "mainnet", "wallet", "spv", "bech", "bc1"]
         if any(x in file.getName().lower() for x in knowns):
-            # Filter the obvious flase positives. You can continue to add to this condition
+            # Filter the obvious flase positives. You can continue to add to this condition using this format
             if ((file.getName().endswith("-slack") == True) or
-                (file.getName().endswith("-journal") == True)):
+                (file.getName().endswith("-journal") == True) or
+                (file.getName().endswith("==-0") == True)):
                 return IngestModule.ProcessResult.OK
-
             # Make an artifact on the blackboard.  TSK_INTERESTING_FILE_HIT is a generic type of
             # artifact.  Refer to the developer docs for other examples.
+            # We used the generic type due to the limitations of creating our own artifact documented in the Sleuth Kit dev docs.
             art = file.newArtifact(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_FILE_HIT)
             att = BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME.getTypeID(),
-                  FindCryptoWalletFilesIngestModuleFactory.moduleName, "Possible Wallet Files")
+                  FindCryptoWalletFilesIngestModuleFactory.moduleName, "Wallet Related Files")
             art.addAttribute(att)
 
             try:
